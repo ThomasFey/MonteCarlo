@@ -8,25 +8,25 @@ from datetime import date, timedelta
 #set up empty list to hold our ending values for each simulated price series
 result = []
 
-#download Google price data into DataFrame
+#download price data from a selcted stock into DataFrame
 tradingyear = date.today() - timedelta(days=365)
 lasttradingyear = '{}/{}/{}'.format(tradingyear.month, tradingyear.day, tradingyear.year)
-stock = input(str(print("What stock would you like to analyse: ")))
-google = data.DataReader(stock, 'yahoo',start=lasttradingyear)
+stock = input(str(print("What stock would you like to analyse (AAPL, FB, AMZN, NFLX, TSLA, GOOG, ^IXIC): ")))
+selectedStock = data.DataReader(stock, 'yahoo',start=lasttradingyear)
 
 #calculate the compound annual growth rate (CAGR) which will give us our mean return input (mu) 
-days = (google.index[-1] - google.index[0]).days
-cagr = ((((google['Adj Close'][-1]) / google['Adj Close'][1])) ** (365.0/days)) - 1
+days = (selectedStock.index[-1] - selectedStock.index[0]).days
+cagr = ((((selectedStock['Adj Close'][-1]) / selectedStock['Adj Close'][1])) ** (365.0/days)) - 1
 print ('CAGR =',str(round(cagr,4)*100)+"%")
 mu = cagr
 
 #create a series of percentage returns and calculate the annual volatility of returns
-google['Returns'] = google['Adj Close'].pct_change()
-vol = google['Returns'].std()*math.sqrt(252)
+selectedStock['Returns'] = selectedStock['Adj Close'].pct_change()
+vol = selectedStock['Returns'].std()*math.sqrt(252)
 print ("Annual Volatility =",str(round(vol,4)*100)+"%")
 
 #Define Variables for starting stock price and number of trading days
-S = google['Adj Close'][-1]
+S = selectedStock['Adj Close'][-1]
 print("Starting stock price:", S)
 T = 252
  
