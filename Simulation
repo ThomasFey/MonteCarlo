@@ -28,7 +28,7 @@ def simple_bettor(funds,initial_wager,wager_count):
     # instead of wager 0 and end at 100. 
     currentWager = 1
 
-    #           change this to, less or equal.
+    # change this to, less or equal.
     while currentWager <= wager_count:
         if rollDice():
             value += wager
