@@ -9,8 +9,10 @@ from datetime import date, timedelta
 result = []
 
 #download Google price data into DataFrame
-yesterday = date.today() - timedelta(days=5)
-google = data.DataReader('GOOG', 'yahoo',start="1/1/2019")
+tradingyear = date.today() - timedelta(days=365)
+lasttradingyear = '{}/{}/{}'.format(tradingyear.month, tradingyear.day, tradingyear.year)
+stock = input(str(print("What stock would you like to analyse: ")))
+google = data.DataReader(stock, 'yahoo',start=lasttradingyear)
 
 #calculate the compound annual growth rate (CAGR) which will give us our mean return input (mu) 
 days = (google.index[-1] - google.index[0]).days
