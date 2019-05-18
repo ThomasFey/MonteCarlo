@@ -4,31 +4,38 @@ import math
 import matplotlib.pyplot as plt
 from pandas_datareader import data
 from datetime import date, timedelta
+import csv
+
+#Analysis list with for all the analysed stocks
+analysisList = []
+analysisList.append(['Stock', 'CAGR', 'Volatility', 'Current stock price', 'Expected value', 'Median', '2.5% Quantile', '97.5% Quantile'])
 
 #function to make a basic analysis of a stock based on a simulation running 1000 times
 def stockAnalysis(stock):
     #set up empty list to hold our ending values for each simulated price series
     result = []
+    returnList = []
 
     #download price data from a selcted stock into DataFrame
     tradingyear = date.today() - timedelta(days=365)
     lasttradingyear = '{}/{}/{}'.format(tradingyear.month, tradingyear.day, tradingyear.year)
     selectedStock = data.DataReader(stock, 'yahoo',start=lasttradingyear)
+    returnList.append(stock)
 
     #calculate the compound annual growth rate (CAGR) which will give us our mean return input (mu) 
     days = (selectedStock.index[-1] - selectedStock.index[0]).days
     cagr = ((((selectedStock['Adj Close'][-1]) / selectedStock['Adj Close'][1])) ** (365.0/days)) - 1
-    print ('CAGR =',str(round(cagr,4)*100)+"%")
     mu = cagr
+    returnList.append(str(round(cagr,4)*100)+"%")
 
     #create a series of percentage returns and calculate the annual volatility of returns
     selectedStock['Returns'] = selectedStock['Adj Close'].pct_change()
     vol = selectedStock['Returns'].std()*math.sqrt(252)
-    print ("Annual Volatility =",str(round(vol,4)*100)+"%")
+    returnList.append(str(round(vol,4)*100)+"%")
 
     #Define Variables for starting stock price and number of trading days
     S = selectedStock['Adj Close'][-1]
-    print("Starting stock price:", S)
+    returnList.append(S)
     T = 252
     
     #number of runs to simulate = 1000
@@ -49,17 +56,17 @@ def stockAnalysis(stock):
         result.append(price_list[-1])
     
     #numpy mean function to calculate the mean of the result
-    print("Expected Value:", round(np.mean(result),2))
+    returnList.append((round(np.mean(result),2)))
 
     #numpy median function to caalculate the median of the result
-    print("Median:", round(np.median(result),2))
+    returnList.append(round(np.median(result),2))
 
     #95% scope range
-    print("2.5% quantile =",np.percentile(result,2.5))
-    print("97.5% quantile =",np.percentile(result,97.5))
+    returnList.append(np.percentile(result,2.5))
+    returnList.append(np.percentile(result,97.5))
 
     #show the plot of multiple price series created above
-    plt.show()
+    plt.clf()
 
     #create histogram of ending stock values for our mutliple simulations
     plt.hist(result,bins=100)
@@ -70,9 +77,11 @@ def stockAnalysis(stock):
     plt.legend(loc='upper right')
     plt.show()
 
+    return returnList
+
 #NASDAQ and S&P500 Analysis for refereence
-stockAnalysis('^IXIC')
-stockAnalysis('^GSPC')
+analysisList.append(stockAnalysis('^IXIC'))
+analysisList.append(stockAnalysis('^GSPC'))
 
 #Asking how many stocks need to be analysed
 amountOfStocks = input(print("How many stocks would you like to analyse: "))
@@ -80,4 +89,11 @@ amountOfStocks = input(print("How many stocks would you like to analyse: "))
 #Making the stock analysis for the requested amount of stocks
 for x in range(0,int(amountOfStocks)):
     stock = input(str(print("What stock would you like to analyse (i.e. AAPL, FB, AMZN, NFLX, TSLA, GOOG): ")))
-    stockAnalysis(stock)
+    analysisList.append(stockAnalysis(stock))
+
+#Create a csv document with the stocks data
+with open('stocks.csv', 'w') as csvfile:
+    filewriter = csv.writer(csvfile)
+    filewriter.writerows(analysisList)
+
+csvfile.close()
