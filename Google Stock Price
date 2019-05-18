@@ -8,7 +8,7 @@ import csv
 
 #Analysis list with for all the analysed stocks
 analysisList = []
-analysisList.append(['Stock', 'CAGR', 'Volatility', 'Current stock price', 'Expected value', 'Median', '2.5% Quantile', '97.5% Quantile'])
+analysisList.append(['Stock', 'CAGR in %', 'Volatility in %', 'Current stock price', 'Expected value', 'Median', '2.5% Quantile', '97.5% Quantile'])
 
 #function to make a basic analysis of a stock based on a simulation running 1000 times
 def stockAnalysis(stock):
@@ -26,12 +26,12 @@ def stockAnalysis(stock):
     days = (selectedStock.index[-1] - selectedStock.index[0]).days
     cagr = ((((selectedStock['Adj Close'][-1]) / selectedStock['Adj Close'][1])) ** (365.0/days)) - 1
     mu = cagr
-    returnList.append(str(round(cagr,4)*100)+"%")
+    returnList.append(str(round(cagr,4)*100))
 
     #create a series of percentage returns and calculate the annual volatility of returns
     selectedStock['Returns'] = selectedStock['Adj Close'].pct_change()
     vol = selectedStock['Returns'].std()*math.sqrt(252)
-    returnList.append(str(round(vol,4)*100)+"%")
+    returnList.append(str(round(vol,4)*100))
 
     #Define Variables for starting stock price and number of trading days
     S = selectedStock['Adj Close'][-1]
@@ -70,6 +70,7 @@ def stockAnalysis(stock):
 
     #create histogram of ending stock values for our mutliple simulations
     plt.hist(result,bins=100)
+    plt.title(stock)
     plt.axvline(np.percentile(result,2.5), color='r', linestyle='dashed', linewidth=2)
     plt.axvline(np.percentile(result,97.5), color='r', linestyle='dashed', linewidth=2)
     plt.axvline(round(np.mean(result),2), color='black', linestyle=':', linewidth=2, label="Expected Value:" + str(round(np.mean(result),2)))
@@ -90,6 +91,17 @@ amountOfStocks = input(print("How many stocks would you like to analyse: "))
 for x in range(0,int(amountOfStocks)):
     stock = input(str(print("What stock would you like to analyse (i.e. AAPL, FB, AMZN, NFLX, TSLA, GOOG): ")))
     analysisList.append(stockAnalysis(stock))
+
+#Sort the compounded annual growth rate ascending
+cagrList = []
+for x in range(1,len(analysisList)):
+    cagrList.append(analysisList[x][1])
+cagrList.sort(key=float, reverse=True)
+
+#Select the stock with the best compounded growth rate
+for i in range(1, len(analysisList)):
+    if cagrList[0] == analysisList[i][1]:
+        analysisList.append(['The recommended stock to invest is {}'.format(analysisList[i][0])])
 
 #Create a csv document with the stocks data
 with open('stocks.csv', 'w') as csvfile:
